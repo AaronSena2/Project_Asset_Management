@@ -5,8 +5,8 @@
         <h2 class="h5">Add Asset</h2>
         <form method="post" action="/index.php?action=assets.create">
             <div class="row g-3">
-                <div class="col-md-4"><label class="form-label">Serial Number</label><input class="form-control" name="serial_number" required></div>
-                <div class="col-md-4"><label class="form-label">Category</label>
+                <div class="col-md-4"><label class="form-label" for="asset_serial_number">Serial Number</label><input id="asset_serial_number" class="form-control" name="serial_number" required></div>
+                <div class="col-md-4"><label class="form-label" for="assetCategory">Category</label>
                     <select class="form-select" id="assetCategory" name="category_id" required>
                         <option value="">Select</option>
                         <?php foreach ($categories as $category): ?>
@@ -17,23 +17,23 @@
                         <?php endforeach; ?>
                     </select>
                 </div>
-                <div class="col-md-4"><label class="form-label">Status</label>
-                    <select class="form-select" name="status_id" required>
+                <div class="col-md-4"><label class="form-label" for="asset_status_id">Status</label>
+                    <select id="asset_status_id" class="form-select" name="status_id" required>
                         <?php foreach ($statuses as $status): ?>
                             <option value="<?= (int) $status['id'] ?>"><?= htmlspecialchars($status['name']) ?></option>
                         <?php endforeach; ?>
                     </select>
                 </div>
-                <div class="col-md-4"><label class="form-label">Date of Purchase</label><input class="form-control" type="date" name="date_of_purchase" required></div>
-                <div class="col-md-4"><label class="form-label">Supplier</label>
-                    <select class="form-select" name="supplier_id" required>
+                <div class="col-md-4"><label class="form-label" for="asset_date_of_purchase">Date of Purchase</label><input id="asset_date_of_purchase" class="form-control" type="date" name="date_of_purchase" required></div>
+                <div class="col-md-4"><label class="form-label" for="asset_supplier_id">Supplier</label>
+                    <select id="asset_supplier_id" class="form-select" name="supplier_id" required>
                         <?php foreach ($suppliers as $supplier): ?>
                             <option value="<?= (int) $supplier['id'] ?>"><?= htmlspecialchars($supplier['company_name']) ?></option>
                         <?php endforeach; ?>
                     </select>
                 </div>
-                <div class="col-md-4"><label class="form-label">Assigned User (optional)</label>
-                    <select class="form-select" name="assigned_to_user_id">
+                <div class="col-md-4"><label class="form-label" for="asset_assigned_to_user_id">Assigned User (optional)</label>
+                    <select id="asset_assigned_to_user_id" class="form-select" name="assigned_to_user_id">
                         <option value="">Unassigned</option>
                         <?php foreach ($users as $user): ?>
                             <option value="<?= (int) $user['id'] ?>"><?= htmlspecialchars($user['full_name']) ?></option>

@@ -8,12 +8,12 @@
                 <?php endif; ?>
                 <form method="post" action="/index.php?action=login">
                     <div class="mb-3">
-                        <label class="form-label">Email</label>
-                        <input class="form-control" type="email" name="email" required>
+                        <label class="form-label" for="login_email">Email</label>
+                        <input id="login_email" class="form-control" type="email" name="email" required>
                     </div>
                     <div class="mb-3">
-                        <label class="form-label">Password</label>
-                        <input class="form-control" type="password" name="password" required>
+                        <label class="form-label" for="login_password">Password</label>
+                        <input id="login_password" class="form-control" type="password" name="password" required>
                     </div>
                     <button class="btn btn-primary w-100" type="submit">Sign in</button>
                 </form>

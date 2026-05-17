@@ -4,13 +4,13 @@
     <h2 class="h5">Add Supplier</h2>
     <form method="post" action="/index.php?action=suppliers.create">
         <div class="row g-3">
-            <div class="col-md-3"><label class="form-label">Supplier Code</label><input class="form-control" name="supplier_code" required></div>
-            <div class="col-md-3"><label class="form-label">Company Name</label><input class="form-control" name="company_name" required></div>
-            <div class="col-md-2"><label class="form-label">Contact Person</label><input class="form-control" name="contact_person" required></div>
-            <div class="col-md-2"><label class="form-label">Email</label><input class="form-control" type="email" name="email" required></div>
-            <div class="col-md-2"><label class="form-label">Phone</label><input class="form-control" name="phone" required></div>
-            <div class="col-md-4"><label class="form-label">Category Specialization</label>
-                <select class="form-select" name="category_specialization_id" required>
+            <div class="col-md-3"><label class="form-label" for="supplier_code">Supplier Code</label><input id="supplier_code" class="form-control" name="supplier_code" required></div>
+            <div class="col-md-3"><label class="form-label" for="supplier_company_name">Company Name</label><input id="supplier_company_name" class="form-control" name="company_name" required></div>
+            <div class="col-md-2"><label class="form-label" for="supplier_contact_person">Contact Person</label><input id="supplier_contact_person" class="form-control" name="contact_person" required></div>
+            <div class="col-md-2"><label class="form-label" for="supplier_email">Email</label><input id="supplier_email" class="form-control" type="email" name="email" required></div>
+            <div class="col-md-2"><label class="form-label" for="supplier_phone">Phone</label><input id="supplier_phone" class="form-control" name="phone" required></div>
+            <div class="col-md-4"><label class="form-label" for="supplier_category_specialization_id">Category Specialization</label>
+                <select id="supplier_category_specialization_id" class="form-select" name="category_specialization_id" required>
                     <?php foreach ($categories as $category): ?>
                         <option value="<?= (int) $category['id'] ?>"><?= htmlspecialchars($category['name']) ?></option>
                     <?php endforeach; ?>
