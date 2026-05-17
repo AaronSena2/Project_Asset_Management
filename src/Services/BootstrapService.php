@@ -10,11 +10,12 @@ use RuntimeException;
 
 final class BootstrapService
 {
-    private const DEFAULT_ADMIN_EMAIL = 'sysadmin@example.com';
-    private const DEFAULT_ADMIN_NAME = 'System Administrator';
-    private const DEFAULT_ADMIN_PASSWORD = 'Sebalulule1';
-
-    public function __construct(private readonly PDO $db)
+    public function __construct(
+        private readonly PDO $db,
+        private readonly string $defaultAdminEmail,
+        private readonly string $defaultAdminPassword,
+        private readonly string $defaultAdminName = 'System Administrator'
+    )
     {
     }
 
@@ -50,13 +51,15 @@ final class BootstrapService
 
         $columns = ['full_name', 'email', 'password_hash', 'role_id'];
         $values = [
-            'full_name' => self::DEFAULT_ADMIN_NAME,
-            'email' => self::DEFAULT_ADMIN_EMAIL,
-            'password_hash' => password_hash(self::DEFAULT_ADMIN_PASSWORD, PASSWORD_DEFAULT),
+            'full_name' => $this->defaultAdminName,
+            'email' => $this->defaultAdminEmail,
+            'password_hash' => password_hash($this->defaultAdminPassword, PASSWORD_DEFAULT),
             'role_id' => $roleId,
         ];
 
-        $createdByExists = $this->db->query("SHOW COLUMNS FROM users LIKE 'created_by'")->fetch() !== false;
+        $createdByStmt = $this->db->prepare("SHOW COLUMNS FROM users LIKE 'created_by'");
+        $createdByStmt->execute();
+        $createdByExists = $createdByStmt->fetch() !== false;
         if ($createdByExists) {
             $columns[] = 'created_by';
             $values['created_by'] = null;

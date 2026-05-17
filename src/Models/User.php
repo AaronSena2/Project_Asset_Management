@@ -14,6 +14,8 @@ final class User
     public const ROLE_IT_MANAGER = 'IT Manager';
     public const ROLE_FINANCE_MANAGER = 'Finance Manager';
     private ?string $userIdColumn = null;
+    /** @var array<string, true>|null */
+    private ?array $usersColumns = null;
 
     public function __construct(private readonly PDO $db)
     {
@@ -108,9 +110,11 @@ final class User
             return $this->userIdColumn;
         }
 
-        $primaryKey = $this->db->query("SHOW KEYS FROM users WHERE Key_name = 'PRIMARY'")->fetch();
+        $primaryKeyStmt = $this->db->prepare("SHOW KEYS FROM users WHERE Key_name = 'PRIMARY'");
+        $primaryKeyStmt->execute();
+        $primaryKey = $primaryKeyStmt->fetch();
         if (is_array($primaryKey) && isset($primaryKey['Column_name'])) {
-            $this->userIdColumn = (string) $primaryKey['Column_name'];
+            $this->userIdColumn = $this->assertSafeIdentifier((string) $primaryKey['Column_name']);
 
             return $this->userIdColumn;
         }
@@ -119,12 +123,43 @@ final class User
             $stmt = $this->db->prepare('SHOW COLUMNS FROM users LIKE :column');
             $stmt->execute(['column' => $fallbackColumn]);
             if ($stmt->fetch() !== false) {
-                $this->userIdColumn = $fallbackColumn;
+                $this->userIdColumn = $this->assertSafeIdentifier($fallbackColumn);
 
                 return $this->userIdColumn;
             }
         }
 
         throw new RuntimeException('Unable to determine users table identifier column.');
+    }
+
+    private function assertSafeIdentifier(string $column): string
+    {
+        if (preg_match('/^[A-Za-z_][A-Za-z0-9_]*$/', $column) !== 1 || !isset($this->usersColumns()[$column])) {
+            throw new RuntimeException('Invalid users table identifier column.');
+        }
+
+        return $column;
+    }
+
+    /** @return array<string, true> */
+    private function usersColumns(): array
+    {
+        if ($this->usersColumns !== null) {
+            return $this->usersColumns;
+        }
+
+        $columnsStmt = $this->db->prepare('SHOW COLUMNS FROM users');
+        $columnsStmt->execute();
+        $columns = [];
+
+        foreach ($columnsStmt->fetchAll() as $columnDefinition) {
+            if (isset($columnDefinition['Field'])) {
+                $columns[(string) $columnDefinition['Field']] = true;
+            }
+        }
+
+        $this->usersColumns = $columns;
+
+        return $this->usersColumns;
     }
 }

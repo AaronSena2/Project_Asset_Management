@@ -58,6 +58,9 @@ Default bootstrap login:
 - Email: `sysadmin@example.com`
 - Password: `Sebalulule1`
 
+You can override these bootstrap credentials with environment variables: `DEFAULT_ADMIN_EMAIL` and `DEFAULT_ADMIN_PASSWORD`.
+For production deployments, change this password immediately after first login.
+
 `database/seed.sql` also includes this same default system administrator plus optional sample data.
 
 ## Run Locally

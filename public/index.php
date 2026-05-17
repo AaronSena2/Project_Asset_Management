@@ -37,7 +37,11 @@ spl_autoload_register(static function (string $class): void {
 $appConfig = require __DIR__ . '/../config/app.php';
 $dbConfig = require __DIR__ . '/../config/database.php';
 $db = Connection::make($dbConfig);
-(new BootstrapService($db))->ensureDefaults();
+(new BootstrapService(
+    $db,
+    $appConfig['default_admin_email'],
+    $appConfig['default_admin_password']
+))->ensureDefaults();
 
 $users = new User($db);
 $categories = new Category($db);
