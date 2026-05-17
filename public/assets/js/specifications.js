@@ -37,7 +37,7 @@
       return;
     }
 
-    const response = await fetch(`/index.php?action=specifications&category_id=${categoryId}`);
+    const response = await fetch(`/index.php?action=specifications&category_id=${encodeURIComponent(categoryId)}`);
     if (!response.ok) {
       return;
     }

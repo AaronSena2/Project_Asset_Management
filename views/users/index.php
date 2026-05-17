@@ -33,7 +33,7 @@
                     <input type="hidden" name="user_id" value="<?= (int) $userItem['id'] ?>">
                     <select class="form-select" name="role_id">
                         <?php foreach ($roles as $role): ?>
-                            <option value="<?= (int) $role['id'] ?>" <?= $userItem['role_name'] === $role['name'] ? 'selected' : '' ?>><?= htmlspecialchars($role['name']) ?></option>
+                            <option value="<?= (int) $role['id'] ?>" <?= (int) $userItem['role_id'] === (int) $role['id'] ? 'selected' : '' ?>><?= htmlspecialchars($role['name']) ?></option>
                         <?php endforeach; ?>
                     </select>
                     <button class="btn btn-outline-primary btn-sm" type="submit">Update</button>

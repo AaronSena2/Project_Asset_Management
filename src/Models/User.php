@@ -43,11 +43,16 @@ final class User
     public function all(): array
     {
         return $this->db->query(
-            'SELECT u.id, u.full_name, u.email, r.name AS role_name, u.is_active, u.created_at
+            'SELECT u.id, u.full_name, u.email, u.role_id, r.name AS role_name, u.is_active, u.created_at
              FROM users u
              INNER JOIN roles r ON r.id = u.role_id
              ORDER BY u.id DESC'
         )->fetchAll();
+    }
+
+    public function countAll(): int
+    {
+        return (int) $this->db->query('SELECT COUNT(*) FROM users')->fetchColumn();
     }
 
     public function roles(): array

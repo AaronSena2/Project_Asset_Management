@@ -24,6 +24,11 @@ final class Supplier
         )->fetchAll();
     }
 
+    public function countAll(): int
+    {
+        return (int) $this->db->query('SELECT COUNT(*) FROM suppliers')->fetchColumn();
+    }
+
     public function create(array $payload, int $createdBy): int
     {
         $stmt = $this->db->prepare(
