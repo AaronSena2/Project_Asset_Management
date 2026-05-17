@@ -19,6 +19,6 @@
                 </form>
             </div>
         </div>
-        <p class="small text-muted mt-3">Default sample password: Password123!</p>
+        <p class="small text-muted mt-3">Default bootstrap login: sysadmin@example.com / Sebalulule1</p>
     </div>
 </div>

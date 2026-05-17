@@ -45,18 +45,20 @@ Access model implemented:
 mysql -u root -p < database/schema.sql
 ```
 
-2. Seed sample data:
+2. (Optional) Seed sample data:
 
 ```bash
 mysql -u root -p < database/seed.sql
 ```
 
-Seed login accounts (all use password `Password123!`):
+On first app start, bootstrap ensures the 4 default roles exist and creates exactly one default **System Administrator** user only when no system administrator exists yet.
 
-- `sysadmin@example.com`
-- `office.admin@example.com`
-- `it.manager@example.com`
-- `finance.manager@example.com`
+Default bootstrap login:
+
+- Email: `sysadmin@example.com`
+- Password: `Sebalulule1`
+
+`database/seed.sql` also includes this same default system administrator plus optional sample data.
 
 ## Run Locally
 

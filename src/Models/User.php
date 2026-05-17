@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Models;
 
 use PDO;
+use RuntimeException;
 
 final class User
 {
@@ -12,6 +13,7 @@ final class User
     public const ROLE_OFFICE_ADMINISTRATOR = 'Office Administrator';
     public const ROLE_IT_MANAGER = 'IT Manager';
     public const ROLE_FINANCE_MANAGER = 'Finance Manager';
+    private ?string $userIdColumn = null;
 
     public function __construct(private readonly PDO $db)
     {
@@ -19,11 +21,15 @@ final class User
 
     public function findByEmail(string $email): ?array
     {
+        $userIdColumn = $this->userIdColumn();
         $stmt = $this->db->prepare(
-            'SELECT u.id, u.full_name, u.email, u.password_hash, r.name AS role_name
+            sprintf(
+                'SELECT u.`%1$s` AS id, u.full_name, u.email, u.password_hash, r.name AS role_name
              FROM users u
              INNER JOIN roles r ON r.id = u.role_id
-             WHERE u.email = :email AND u.is_active = 1'
+             WHERE u.email = :email AND u.is_active = 1',
+                $userIdColumn
+            )
         );
         $stmt->execute(['email' => $email]);
         $user = $stmt->fetch();
@@ -33,8 +39,12 @@ final class User
 
     public function officeAdministratorEmail(): ?string
     {
+        $userIdColumn = $this->userIdColumn();
         $stmt = $this->db->query(
-            "SELECT u.email FROM users u INNER JOIN roles r ON r.id = u.role_id WHERE r.name = 'Office Administrator' ORDER BY u.id ASC LIMIT 1"
+            sprintf(
+                "SELECT u.email FROM users u INNER JOIN roles r ON r.id = u.role_id WHERE r.name = 'Office Administrator' ORDER BY u.`%s` ASC LIMIT 1",
+                $userIdColumn
+            )
         );
 
         return $stmt->fetchColumn() ?: null;
@@ -42,11 +52,15 @@ final class User
 
     public function all(): array
     {
+        $userIdColumn = $this->userIdColumn();
         return $this->db->query(
-            'SELECT u.id, u.full_name, u.email, u.role_id, r.name AS role_name, u.is_active, u.created_at
+            sprintf(
+                'SELECT u.`%1$s` AS id, u.full_name, u.email, u.role_id, r.name AS role_name, u.is_active, u.created_at
              FROM users u
              INNER JOIN roles r ON r.id = u.role_id
-             ORDER BY u.id DESC'
+             ORDER BY u.`%1$s` DESC',
+                $userIdColumn
+            )
         )->fetchAll();
     }
 
@@ -79,10 +93,38 @@ final class User
 
     public function updateRole(int $userId, int $roleId): void
     {
-        $stmt = $this->db->prepare('UPDATE users SET role_id = :role_id WHERE id = :id');
+        $stmt = $this->db->prepare(
+            sprintf('UPDATE users SET role_id = :role_id WHERE `%s` = :id', $this->userIdColumn())
+        );
         $stmt->execute([
             'role_id' => $roleId,
             'id' => $userId,
         ]);
+    }
+
+    private function userIdColumn(): string
+    {
+        if ($this->userIdColumn !== null) {
+            return $this->userIdColumn;
+        }
+
+        $primaryKey = $this->db->query("SHOW KEYS FROM users WHERE Key_name = 'PRIMARY'")->fetch();
+        if (is_array($primaryKey) && isset($primaryKey['Column_name'])) {
+            $this->userIdColumn = (string) $primaryKey['Column_name'];
+
+            return $this->userIdColumn;
+        }
+
+        foreach (['id', 'user_id'] as $fallbackColumn) {
+            $stmt = $this->db->prepare('SHOW COLUMNS FROM users LIKE :column');
+            $stmt->execute(['column' => $fallbackColumn]);
+            if ($stmt->fetch() !== false) {
+                $this->userIdColumn = $fallbackColumn;
+
+                return $this->userIdColumn;
+            }
+        }
+
+        throw new RuntimeException('Unable to determine users table identifier column.');
     }
 }

@@ -15,6 +15,7 @@ use App\Models\Category;
 use App\Models\Supplier;
 use App\Models\User;
 use App\Services\AuthService;
+use App\Services\BootstrapService;
 use App\Services\NativeMailer;
 use App\Services\NotificationService;
 
@@ -36,6 +37,7 @@ spl_autoload_register(static function (string $class): void {
 $appConfig = require __DIR__ . '/../config/app.php';
 $dbConfig = require __DIR__ . '/../config/database.php';
 $db = Connection::make($dbConfig);
+(new BootstrapService($db))->ensureDefaults();
 
 $users = new User($db);
 $categories = new Category($db);
