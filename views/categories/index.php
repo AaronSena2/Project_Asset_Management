@@ -3,17 +3,17 @@
     <h2 class="h5">Add Custom Specification Field</h2>
     <form method="post" action="/index.php?action=categories.definition.create">
         <div class="row g-3">
-            <div class="col-md-3"><label class="form-label">Category</label>
-                <select class="form-select" name="category_id" required>
+            <div class="col-md-3"><label class="form-label" for="spec_category_id">Category</label>
+                <select id="spec_category_id" class="form-select" name="category_id" required>
                     <?php foreach ($categories as $category): ?>
                         <option value="<?= (int) $category['id'] ?>"><?= htmlspecialchars($category['name']) ?></option>
                     <?php endforeach; ?>
                 </select>
             </div>
-            <div class="col-md-2"><label class="form-label">Field Key</label><input class="form-control" name="field_key" required></div>
-            <div class="col-md-3"><label class="form-label">Field Label</label><input class="form-control" name="field_label" required></div>
-            <div class="col-md-2"><label class="form-label">Field Type</label>
-                <select class="form-select" name="field_type">
+            <div class="col-md-2"><label class="form-label" for="spec_field_key">Field Key</label><input id="spec_field_key" class="form-control" name="field_key" required></div>
+            <div class="col-md-3"><label class="form-label" for="spec_field_label">Field Label</label><input id="spec_field_label" class="form-control" name="field_label" required></div>
+            <div class="col-md-2"><label class="form-label" for="spec_field_type">Field Type</label>
+                <select id="spec_field_type" class="form-select" name="field_type">
                     <option value="text">Text</option>
                     <option value="number">Number</option>
                     <option value="date">Date</option>
