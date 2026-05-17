@@ -39,6 +39,7 @@
 
     const response = await fetch(`/index.php?action=specifications&category_id=${encodeURIComponent(categoryId)}`);
     if (!response.ok) {
+      specificationsContainer.innerHTML = '<div class="alert alert-danger">Unable to load specifications right now.</div>';
       return;
     }
 

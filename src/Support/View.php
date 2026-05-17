@@ -8,8 +8,20 @@ final class View
 {
     public static function render(string $template, array $data = []): void
     {
-        extract($data, EXTR_SKIP);
         $templateFile = __DIR__ . '/../../views/' . $template . '.php';
+        $viewData = [];
+        foreach ($data as $key => $value) {
+            if (!is_string($key) || !preg_match('/^[a-zA-Z_][a-zA-Z0-9_]*$/', $key)) {
+                continue;
+            }
+
+            if (in_array($key, ['templateFile', 'viewData'], true)) {
+                continue;
+            }
+
+            $viewData[$key] = $value;
+        }
+
         require __DIR__ . '/../../views/layouts/app.php';
     }
 }
