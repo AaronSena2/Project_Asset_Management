@@ -14,6 +14,9 @@ use App\Support\View;
 
 final class AssetController
 {
+    /** @var array<int, string>|null */
+    private ?array $categoryNamesById = null;
+
     public function __construct(
         private readonly AuthService $auth,
         private readonly Asset $assets,
@@ -109,10 +112,7 @@ final class AssetController
             return true;
         }
 
-        $categoryNamesById = [];
-        foreach ($this->categories->all() as $category) {
-            $categoryNamesById[(int) $category['id']] = $category['name'];
-        }
+        $categoryNamesById = $this->categoryNameLookup();
 
         $categoryName = $categoryNamesById[$categoryId] ?? '';
         if ($roleName === User::ROLE_OFFICE_ADMINISTRATOR) {
@@ -124,5 +124,20 @@ final class AssetController
         }
 
         return false;
+    }
+
+    /** @return array<int, string> */
+    private function categoryNameLookup(): array
+    {
+        if ($this->categoryNamesById !== null) {
+            return $this->categoryNamesById;
+        }
+
+        $this->categoryNamesById = [];
+        foreach ($this->categories->all() as $category) {
+            $this->categoryNamesById[(int) $category['id']] = $category['name'];
+        }
+
+        return $this->categoryNamesById;
     }
 }

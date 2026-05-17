@@ -30,8 +30,8 @@ final class DashboardController
         View::render('dashboard/index', [
             'role' => $role,
             'assetTotal' => $this->assets->totalCount(),
-            'supplierTotal' => count($this->suppliers->all()),
-            'userTotal' => count($this->users->all()),
+            'supplierTotal' => $this->suppliers->countAll(),
+            'userTotal' => $this->users->countAll(),
             'categoryDistribution' => $this->assets->countByCategory(),
             'statusDistribution' => $this->assets->countByStatus(),
         ]);
