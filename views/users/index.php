@@ -31,7 +31,7 @@
             <td>
                 <form class="d-flex gap-2" method="post" action="/index.php?action=users.update_role">
                     <input type="hidden" name="user_id" value="<?= (int) $userItem['id'] ?>">
-                    <select class="form-select" name="role_id">
+                    <select aria-label="Update role for user" class="form-select" name="role_id">
                         <?php foreach ($roles as $role): ?>
                             <option value="<?= (int) $role['id'] ?>" <?= (int) $userItem['role_id'] === (int) $role['id'] ? 'selected' : '' ?>><?= htmlspecialchars($role['name']) ?></option>
                         <?php endforeach; ?>

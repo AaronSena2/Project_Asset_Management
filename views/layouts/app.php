@@ -1,6 +1,13 @@
 <?php
 $appTitle = 'Inventory Management System';
 $user = $_SESSION['user'] ?? null;
+if (!empty($viewData) && is_array($viewData)) {
+    foreach ($viewData as $viewKey => $viewValue) {
+        if (!isset($$viewKey)) {
+            $$viewKey = $viewValue;
+        }
+    }
+}
 ?>
 <!doctype html>
 <html lang="en">

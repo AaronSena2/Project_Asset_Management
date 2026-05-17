@@ -39,11 +39,11 @@
                 <td>
                     <form class="d-flex gap-2" method="post" action="/index.php?action=suppliers.update">
                         <input type="hidden" name="supplier_id" value="<?= (int) $supplier['id'] ?>">
-                        <input class="form-control" name="company_name" value="<?= htmlspecialchars($supplier['company_name']) ?>" required>
-                        <input class="form-control" name="contact_person" value="<?= htmlspecialchars($supplier['contact_person']) ?>" required>
-                        <input class="form-control" type="email" name="email" value="<?= htmlspecialchars($supplier['email']) ?>" required>
-                        <input class="form-control" name="phone" value="<?= htmlspecialchars($supplier['phone']) ?>" required>
-                        <select class="form-select" name="category_specialization_id" required>
+                        <input aria-label="Company name" class="form-control" name="company_name" value="<?= htmlspecialchars($supplier['company_name']) ?>" required>
+                        <input aria-label="Contact person" class="form-control" name="contact_person" value="<?= htmlspecialchars($supplier['contact_person']) ?>" required>
+                        <input aria-label="Supplier email" class="form-control" type="email" name="email" value="<?= htmlspecialchars($supplier['email']) ?>" required>
+                        <input aria-label="Supplier phone" class="form-control" name="phone" value="<?= htmlspecialchars($supplier['phone']) ?>" required>
+                        <select aria-label="Category specialization" class="form-select" name="category_specialization_id" required>
                             <?php foreach ($categories as $category): ?>
                                 <option value="<?= (int) $category['id'] ?>" <?= (int) $supplier['category_specialization_id'] === (int) $category['id'] ? 'selected' : '' ?>>
                                     <?= htmlspecialchars($category['name']) ?>
