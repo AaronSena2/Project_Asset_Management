@@ -115,6 +115,10 @@ body.dashboard-layout,
     background: var(--bg-body);
 }
 
+body.dashboard-layout {
+    overflow-x: hidden;
+}
+
 .sidebar,
 .app-sidebar {
     position: fixed;
@@ -128,6 +132,7 @@ body.dashboard-layout,
     border-right: 1px solid rgba(255, 255, 255, 0.06);
     z-index: 1030;
     overflow-y: auto;
+    transition: transform var(--transition);
 }
 
 .sidebar__brand,
@@ -237,6 +242,10 @@ body.dashboard-layout,
     padding: 1.5rem;
 }
 
+.sidebar-toggle {
+    display: none;
+}
+
 .topbar,
 .navbar {
     position: sticky;
@@ -273,6 +282,10 @@ body.dashboard-layout,
     font-size: 0.9rem;
 }
 
+.topbar__heading {
+    min-width: 0;
+}
+
 .breadcrumb,
 .topbar__breadcrumb {
     display: flex;
@@ -301,6 +314,22 @@ body.dashboard-layout,
     border-radius: 1rem;
     background: var(--bg-surface-alt);
     border: 1px solid var(--border);
+}
+
+.profile-chip > span:last-child,
+.user-dropdown > span:last-child {
+    min-width: 0;
+}
+
+.profile-chip > span:last-child strong,
+.profile-chip > span:last-child span,
+.user-dropdown > span:last-child strong,
+.user-dropdown > span:last-child span {
+    display: block;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 180px;
 }
 
 .profile-chip__avatar,
@@ -810,11 +839,31 @@ button:focus-visible,
 .status-control {
     display: inline-flex;
     align-items: center;
+    flex-wrap: wrap;
     gap: 0.5rem;
     padding: 0.35rem;
     border-radius: 0.95rem;
     background: var(--bg-surface-alt);
     border: 1px solid var(--border);
+}
+
+.inline-status-editor .form-select,
+.status-control .form-select {
+    min-width: 160px;
+}
+
+.table-responsive .table form.d-flex {
+    flex-wrap: wrap;
+}
+
+.table-responsive .table form.d-flex .form-control,
+.table-responsive .table form.d-flex .form-select {
+    min-width: 150px;
+    flex: 1 1 150px;
+}
+
+.table-responsive .table form.d-flex .btn {
+    flex-shrink: 0;
 }
 
 .list-group {
@@ -862,18 +911,44 @@ button:focus-visible,
 }
 
 @media (max-width: 991px) {
+    .sidebar-toggle {
+        display: inline-flex;
+    }
+
+    .sidebar-backdrop {
+        position: fixed;
+        inset: 0;
+        background: rgba(15, 23, 42, 0.45);
+        z-index: 1020;
+        opacity: 0;
+        visibility: hidden;
+        transition: opacity var(--transition), visibility var(--transition);
+    }
+
     .sidebar,
     .app-sidebar {
-        position: static;
-        width: 100%;
-        min-height: auto;
+        position: fixed;
+        inset: 0 auto 0 0;
+        width: min(70vw, 320px);
+        min-height: 100dvh;
         border-right: 0;
-        border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+        transform: translateX(-100%);
+        box-shadow: var(--shadow-lg);
+    }
+
+    body.dashboard-layout.is-sidebar-open .sidebar,
+    body.dashboard-layout.is-sidebar-open .app-sidebar {
+        transform: translateX(0);
+    }
+
+    body.dashboard-layout.is-sidebar-open .sidebar-backdrop {
+        opacity: 1;
+        visibility: visible;
     }
 
     body.dashboard-layout,
     .app-shell {
-        flex-direction: column;
+        display: block;
     }
 
     .main-content,
@@ -887,6 +962,32 @@ button:focus-visible,
     .container,
     .container-fluid {
         padding: 0 1rem;
+    }
+
+    .topbar,
+    .navbar {
+        align-items: flex-start;
+        flex-wrap: wrap;
+    }
+
+    .profile-chip,
+    .user-dropdown {
+        width: 100%;
+        justify-content: flex-start;
+    }
+
+    .profile-chip > span:last-child strong,
+    .profile-chip > span:last-child span,
+    .user-dropdown > span:last-child strong,
+    .user-dropdown > span:last-child span {
+        max-width: none;
+    }
+
+    .chart-bars,
+    .analytics-bars,
+    .bar-chart {
+        grid-template-columns: repeat(4, minmax(54px, 1fr));
+        min-width: 320px;
     }
 
     .analytics-dashboard,
@@ -908,6 +1009,17 @@ button:focus-visible,
     .table th,
     .table td {
         padding: 0.85rem 0.9rem;
+    }
+
+    .inline-status-editor .form-select,
+    .status-control .form-select {
+        min-width: 130px;
+    }
+
+    .table-responsive .table form.d-flex .form-control,
+    .table-responsive .table form.d-flex .form-select {
+        min-width: 130px;
+        flex-basis: 130px;
     }
 }
 

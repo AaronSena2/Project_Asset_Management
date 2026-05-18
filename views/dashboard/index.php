@@ -126,7 +126,7 @@ $trackedTotal = max(1, (int) $assetTotal);
     <div class="col-lg-4">
         <section class="card mb-4">
             <div class="card-body">
-                <div class="d-flex justify-content-between align-items-center mb-3">
+                <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-3">
                     <div>
                         <h2 class="h5 mb-0">Register health</h2>
                         <p class="text-muted mb-0">Quick operational indicators.</p>
@@ -161,7 +161,7 @@ $trackedTotal = max(1, (int) $assetTotal);
     <div class="col-lg-6">
         <section class="card">
             <div class="card-body">
-                <div class="d-flex justify-content-between align-items-center mb-3">
+                <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-3">
                     <div>
                         <h2 class="h5 mb-0">Asset distribution by category</h2>
                         <p class="text-muted mb-0">Top-level mix of registered asset groups.</p>
@@ -184,7 +184,7 @@ $trackedTotal = max(1, (int) $assetTotal);
     <div class="col-lg-6">
         <section class="card">
             <div class="card-body">
-                <div class="d-flex justify-content-between align-items-center mb-3">
+                <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-3">
                     <div>
                         <h2 class="h5 mb-0">Asset distribution by status</h2>
                         <p class="text-muted mb-0">Status visibility for operations and lifecycle tracking.</p>
