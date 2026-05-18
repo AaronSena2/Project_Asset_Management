@@ -1,6 +1,7 @@
 <?php
 $canManageAssets = $canManageFurniture || $canManageTechnical;
 $isOfficeAdministrator = ($role ?? ($_SESSION['user']['role_name'] ?? '')) === 'Office Administrator';
+$isSystemAdministrator = ($role ?? ($_SESSION['user']['role_name'] ?? '')) === 'System Administrator';
 $totalAssets = count($assets);
 
 $statusBadgeMap = [
@@ -29,7 +30,7 @@ $statusBadgeMap = [
 
         <div class="d-flex flex-wrap gap-2 align-items-center">
             <span class="badge badge-primary"><?= (int) $totalAssets ?> assets tracked</span>
-            <?php if ($canManageAssets): ?>
+            <?php if ($isSystemAdministrator): ?>
                 <a href="#asset-import-panel" class="btn btn-primary">Import Assets</a>
             <?php endif; ?>
         </div>
@@ -74,26 +75,33 @@ $statusBadgeMap = [
     </div>
 </section>
 
-<?php if ($canManageAssets): ?>
+<?php if ($isSystemAdministrator): ?>
 <section id="asset-import-panel" class="card mb-4">
     <div class="card-body">
         <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-3">
             <div>
                 <h2 class="h5 mb-0">Admin bulk asset import</h2>
-                <p class="text-muted mb-0">Upload a spreadsheet or CSV file to quickly seed the asset register.</p>
+                <p class="text-muted mb-0">Upload a CSV file to quickly seed the asset register.</p>
             </div>
             <span class="badge badge-info">System Admin workflow</span>
         </div>
 
-        <div class="import-dropzone upload-dropzone">
+        <?php if (isset($_GET['import_success'])): ?>
+            <div class="alert alert-success" role="status"><?= htmlspecialchars((string) $_GET['import_success']) ?></div>
+        <?php endif; ?>
+        <?php if (isset($_GET['import_error'])): ?>
+            <div class="alert alert-danger" role="alert"><?= htmlspecialchars((string) $_GET['import_error']) ?></div>
+        <?php endif; ?>
+
+        <form method="post" action="/index.php?action=assets.import" enctype="multipart/form-data" class="import-dropzone upload-dropzone">
             <div class="metric-card__icon" aria-hidden="true">⬆️</div>
-            <h3 class="h6 mb-1">Drop import file here</h3>
-            <p class="text-muted mb-2">Drag and drop a CSV/XLSX file here, or browse your device to import assets in bulk.</p>
-            <div class="d-flex flex-wrap justify-content-center gap-2">
-                <button type="button" class="btn btn-primary">Choose File</button>
-                <button type="button" class="btn btn-outline-primary">Download Template</button>
+            <h3 class="h6 mb-1">Upload asset CSV</h3>
+            <p class="text-muted mb-2">Required columns: serial_number, category_id, status_id, date_of_purchase, supplier_id.</p>
+            <div class="d-flex flex-column flex-md-row justify-content-center gap-2 align-items-center">
+                <input class="form-control" type="file" name="asset_csv" accept=".csv,text/csv" required style="max-width: 420px;">
+                <button type="submit" class="btn btn-primary">Import CSV</button>
             </div>
-        </div>
+        </form>
     </div>
 </section>
 <?php endif; ?>
@@ -218,7 +226,7 @@ $statusBadgeMap = [
                 <h2 class="h5 mb-0">Asset register table</h2>
                 <p class="text-muted mb-0">Minimal, high-clarity asset inventory view with quick status visibility.</p>
             </div>
-            <?php if ($canManageAssets): ?>
+            <?php if ($isSystemAdministrator): ?>
                 <a href="#asset-import-panel" class="btn btn-primary">Import Assets</a>
             <?php endif; ?>
         </div>
