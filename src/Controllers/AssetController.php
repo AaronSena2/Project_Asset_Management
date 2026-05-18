@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Controllers;
 
+use DateTimeImmutable;
 use App\Models\Asset;
 use App\Models\Category;
 use App\Models\Supplier;
@@ -11,6 +12,8 @@ use App\Models\User;
 use App\Services\AuthService;
 use App\Services\NotificationService;
 use App\Support\View;
+use RuntimeException;
+use Throwable;
 
 final class AssetController
 {
@@ -93,6 +96,153 @@ final class AssetController
         exit;
     }
 
+    public function importCsv(array $files): void
+    {
+        $this->auth->requireRole([User::ROLE_SYSTEM_ADMINISTRATOR]);
+
+        $file = $files['asset_csv'] ?? null;
+        if (!is_array($file)) {
+            $this->redirectWithImportError('Please select a CSV file to upload.');
+        }
+
+        $uploadError = (int) ($file['error'] ?? UPLOAD_ERR_NO_FILE);
+        if ($uploadError !== UPLOAD_ERR_OK) {
+            $message = match ($uploadError) {
+                UPLOAD_ERR_NO_FILE => 'Please select a CSV file to upload.',
+                UPLOAD_ERR_INI_SIZE, UPLOAD_ERR_FORM_SIZE => 'The selected file is too large to upload.',
+                UPLOAD_ERR_PARTIAL => 'The CSV upload did not complete. Please try again.',
+                default => 'CSV upload failed. Please try again.',
+            };
+            $this->redirectWithImportError($message);
+        }
+
+        $tmpName = (string) ($file['tmp_name'] ?? '');
+        $originalName = strtolower((string) ($file['name'] ?? ''));
+        if ($tmpName === '' || !is_file($tmpName) || pathinfo($originalName, PATHINFO_EXTENSION) !== 'csv') {
+            $this->redirectWithImportError('Only CSV files are supported for asset import.');
+        }
+
+        $handle = fopen($tmpName, 'rb');
+        if ($handle === false) {
+            $this->redirectWithImportError('Could not read the uploaded CSV file.');
+        }
+
+        try {
+            $header = fgetcsv($handle);
+            if ($header === false) {
+                throw new RuntimeException('CSV file is empty.');
+            }
+
+            $headerMap = [];
+            foreach ($header as $index => $columnName) {
+                $normalized = strtolower(trim((string) $columnName));
+                if ($normalized === '') {
+                    continue;
+                }
+
+                // Remove UTF-8 BOM on the first header cell when the CSV was saved by spreadsheet tools.
+                $normalized = ltrim($normalized, "\xEF\xBB\xBF");
+                $headerMap[$normalized] = $index;
+            }
+
+            foreach (['serial_number', 'category_id', 'status_id', 'date_of_purchase', 'supplier_id'] as $requiredColumn) {
+                if (!isset($headerMap[$requiredColumn])) {
+                    throw new RuntimeException(sprintf('Missing required CSV column: %s.', $requiredColumn));
+                }
+            }
+
+            $validCategoryIds = [];
+            foreach ($this->categories->all() as $category) {
+                $validCategoryIds[(int) $category['id']] = true;
+            }
+
+            $validStatusIds = [];
+            foreach ($this->assets->statuses() as $status) {
+                $validStatusIds[(int) $status['id']] = true;
+            }
+
+            $validSupplierIds = [];
+            foreach ($this->suppliers->all() as $supplier) {
+                $validSupplierIds[(int) $supplier['id']] = true;
+            }
+
+            $validUserIds = [];
+            foreach ($this->users->all() as $user) {
+                $validUserIds[(int) $user['id']] = true;
+            }
+
+            $creator = $this->auth->user();
+            $importedCount = 0;
+            $rowNumber = 1;
+            while (($row = fgetcsv($handle)) !== false) {
+                $rowNumber++;
+                if ($this->isEmptyCsvRow($row)) {
+                    continue;
+                }
+
+                $serialNumber = trim((string) ($row[$headerMap['serial_number']] ?? ''));
+                $dateOfPurchase = trim((string) ($row[$headerMap['date_of_purchase']] ?? ''));
+                $categoryId = (int) trim((string) ($row[$headerMap['category_id']] ?? '0'));
+                $statusId = (int) trim((string) ($row[$headerMap['status_id']] ?? '0'));
+                $supplierId = (int) trim((string) ($row[$headerMap['supplier_id']] ?? '0'));
+                $assignedToRaw = '';
+                if (isset($headerMap['assigned_to_user_id'])) {
+                    $assignedToRaw = trim((string) ($row[$headerMap['assigned_to_user_id']] ?? ''));
+                }
+                $assignedToUserId = $assignedToRaw === '' ? null : (int) $assignedToRaw;
+
+                if ($serialNumber === '' || $dateOfPurchase === '' || $categoryId <= 0 || $statusId <= 0 || $supplierId <= 0) {
+                    throw new RuntimeException(sprintf('Row %d has missing required values.', $rowNumber));
+                }
+
+                if (!isset($validCategoryIds[$categoryId])) {
+                    throw new RuntimeException(sprintf('Row %d has an invalid category_id.', $rowNumber));
+                }
+
+                if (!isset($validStatusIds[$statusId])) {
+                    throw new RuntimeException(sprintf('Row %d has an invalid status_id.', $rowNumber));
+                }
+
+                if (!isset($validSupplierIds[$supplierId])) {
+                    throw new RuntimeException(sprintf('Row %d has an invalid supplier_id.', $rowNumber));
+                }
+
+                if ($assignedToUserId !== null && !isset($validUserIds[$assignedToUserId])) {
+                    throw new RuntimeException(sprintf('Row %d has an invalid assigned_to_user_id.', $rowNumber));
+                }
+
+                if (!$this->isValidDate($dateOfPurchase)) {
+                    throw new RuntimeException(sprintf('Row %d has an invalid date_of_purchase. Use YYYY-MM-DD.', $rowNumber));
+                }
+
+                $this->assets->create([
+                    'serial_number' => $serialNumber,
+                    'category_id' => $categoryId,
+                    'status_id' => $statusId,
+                    'date_of_purchase' => $dateOfPurchase,
+                    'supplier_id' => $supplierId,
+                    'assigned_to_user_id' => $assignedToUserId,
+                    'specifications' => [],
+                ], (int) ($creator['id'] ?? 0));
+                $importedCount++;
+            }
+
+            if ($importedCount === 0) {
+                throw new RuntimeException('No asset records were found in the CSV file.');
+            }
+
+            header('Location: /index.php?action=assets&import_success=' . rawurlencode(sprintf('%d assets imported successfully.', $importedCount)));
+            exit;
+        } catch (RuntimeException $exception) {
+            $this->redirectWithImportError($exception->getMessage());
+        } catch (Throwable $exception) {
+            error_log('Asset CSV import failed: ' . $exception->getMessage());
+            $this->redirectWithImportError('Asset import failed. Please check the CSV values and try again.');
+        } finally {
+            fclose($handle);
+        }
+    }
+
     public function specificationsByCategory(int $categoryId): void
     {
         $this->auth->requireRole([
@@ -139,5 +289,30 @@ final class AssetController
         }
 
         return $this->categoryNamesById;
+    }
+
+    /** @param array<int, string|null> $row */
+    private function isEmptyCsvRow(array $row): bool
+    {
+        foreach ($row as $value) {
+            if (trim((string) $value) !== '') {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    private function isValidDate(string $date): bool
+    {
+        $value = DateTimeImmutable::createFromFormat('Y-m-d', $date);
+
+        return $value !== false && $value->format('Y-m-d') === $date;
+    }
+
+    private function redirectWithImportError(string $message): void
+    {
+        header('Location: /index.php?action=assets&import_error=' . rawurlencode($message));
+        exit;
     }
 }

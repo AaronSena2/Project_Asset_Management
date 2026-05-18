@@ -109,6 +109,11 @@ if ($action === 'assets.create' && $method === 'POST') {
     return;
 }
 
+if ($action === 'assets.import' && $method === 'POST') {
+    $assetController->importCsv($_FILES);
+    return;
+}
+
 if ($action === 'specifications' && $method === 'GET') {
     $assetController->specificationsByCategory((int) ($_GET['category_id'] ?? 0));
     return;
