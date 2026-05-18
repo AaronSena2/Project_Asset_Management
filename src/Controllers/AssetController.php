@@ -101,8 +101,19 @@ final class AssetController
         $this->auth->requireRole([User::ROLE_SYSTEM_ADMINISTRATOR]);
 
         $file = $files['asset_csv'] ?? null;
-        if (!is_array($file) || ($file['error'] ?? UPLOAD_ERR_NO_FILE) !== UPLOAD_ERR_OK) {
-            $this->redirectWithImportError('Please select a valid CSV file to upload.');
+        if (!is_array($file)) {
+            $this->redirectWithImportError('Please select a CSV file to upload.');
+        }
+
+        $uploadError = (int) ($file['error'] ?? UPLOAD_ERR_NO_FILE);
+        if ($uploadError !== UPLOAD_ERR_OK) {
+            $message = match ($uploadError) {
+                UPLOAD_ERR_NO_FILE => 'Please select a CSV file to upload.',
+                UPLOAD_ERR_INI_SIZE, UPLOAD_ERR_FORM_SIZE => 'The selected file is too large to upload.',
+                UPLOAD_ERR_PARTIAL => 'The CSV upload did not complete. Please try again.',
+                default => 'CSV upload failed. Please try again.',
+            };
+            $this->redirectWithImportError($message);
         }
 
         $tmpName = (string) ($file['tmp_name'] ?? '');
@@ -129,6 +140,7 @@ final class AssetController
                     continue;
                 }
 
+                // Remove UTF-8 BOM on the first header cell when the CSV was saved by spreadsheet tools.
                 $normalized = ltrim($normalized, "\xEF\xBB\xBF");
                 $headerMap[$normalized] = $index;
             }
@@ -173,7 +185,10 @@ final class AssetController
                 $categoryId = (int) trim((string) ($row[$headerMap['category_id']] ?? '0'));
                 $statusId = (int) trim((string) ($row[$headerMap['status_id']] ?? '0'));
                 $supplierId = (int) trim((string) ($row[$headerMap['supplier_id']] ?? '0'));
-                $assignedToRaw = trim((string) ($row[$headerMap['assigned_to_user_id']] ?? ''));
+                $assignedToRaw = '';
+                if (isset($headerMap['assigned_to_user_id'])) {
+                    $assignedToRaw = trim((string) ($row[$headerMap['assigned_to_user_id']] ?? ''));
+                }
                 $assignedToUserId = $assignedToRaw === '' ? null : (int) $assignedToRaw;
 
                 if ($serialNumber === '' || $dateOfPurchase === '' || $categoryId <= 0 || $statusId <= 0 || $supplierId <= 0) {
@@ -221,6 +236,7 @@ final class AssetController
         } catch (RuntimeException $exception) {
             $this->redirectWithImportError($exception->getMessage());
         } catch (Throwable $exception) {
+            error_log('Asset CSV import failed: ' . $exception->getMessage());
             $this->redirectWithImportError('Asset import failed. Please check the CSV values and try again.');
         } finally {
             fclose($handle);

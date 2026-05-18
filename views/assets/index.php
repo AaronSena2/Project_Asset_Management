@@ -87,7 +87,7 @@ $statusBadgeMap = [
         </div>
 
         <?php if (isset($_GET['import_success'])): ?>
-            <div class="alert alert-success" role="status"><?= htmlspecialchars((string) $_GET['import_success']) ?></div>
+            <div class="alert alert-success" role="alert"><?= htmlspecialchars((string) $_GET['import_success']) ?></div>
         <?php endif; ?>
         <?php if (isset($_GET['import_error'])): ?>
             <div class="alert alert-danger" role="alert"><?= htmlspecialchars((string) $_GET['import_error']) ?></div>
