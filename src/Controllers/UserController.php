@@ -11,6 +11,10 @@ use App\Support\View;
 
 final class UserController
 {
+    private const int PASSWORD_MIN_LENGTH = 8;
+    private const string PASSWORD_PATTERN = '(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[^A-Za-z0-9]).{8,}';
+    private const string PASSWORD_HINT = 'Minimum 8 characters with uppercase, lowercase, number, and special character.';
+
     public function __construct(
         private readonly AuthService $auth,
         private readonly User $users,
@@ -27,6 +31,9 @@ final class UserController
             'users' => $this->users->all(),
             'roles' => $this->users->roles(),
             'currentUserId' => (int) ($this->auth->user()['id'] ?? 0),
+            'passwordPattern' => self::PASSWORD_PATTERN,
+            'passwordTitle' => self::PASSWORD_HINT,
+            'passwordMinLength' => self::PASSWORD_MIN_LENGTH,
         ]);
     }
 
@@ -176,7 +183,7 @@ final class UserController
 
     private function isStrongPassword(string $password): bool
     {
-        return strlen($password) >= 8
+        return strlen($password) >= self::PASSWORD_MIN_LENGTH
             && preg_match('/[A-Z]/', $password) === 1
             && preg_match('/[a-z]/', $password) === 1
             && preg_match('/\d/', $password) === 1

@@ -1,8 +1,3 @@
-<?php
-$passwordPattern = '(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[^A-Za-z0-9]).{8,}';
-$passwordTitle = 'Minimum 8 characters with uppercase, lowercase, number, and special character.';
-?>
-
 <h1 class="h3 mb-3">Users & Role Assignments</h1>
 <div class="card mb-4"><div class="card-body">
     <h2 class="h5">Create User</h2>
@@ -10,7 +5,7 @@ $passwordTitle = 'Minimum 8 characters with uppercase, lowercase, number, and sp
         <div class="row g-3">
             <div class="col-md-4"><label class="form-label" for="new_user_full_name">Full Name</label><input id="new_user_full_name" class="form-control" name="full_name" required></div>
             <div class="col-md-3"><label class="form-label" for="new_user_email">Email</label><input id="new_user_email" class="form-control" type="email" name="email" required></div>
-            <div class="col-md-3"><label class="form-label" for="new_user_password">Password</label><input id="new_user_password" class="form-control" type="password" name="password" autocomplete="new-password" minlength="8" pattern="<?= htmlspecialchars($passwordPattern) ?>" title="<?= htmlspecialchars($passwordTitle) ?>" required></div>
+            <div class="col-md-3"><label class="form-label" for="new_user_password">Password</label><input id="new_user_password" class="form-control" type="password" name="password" autocomplete="new-password" minlength="<?= (int) ($passwordMinLength ?? 8) ?>" pattern="<?= htmlspecialchars((string) ($passwordPattern ?? '')) ?>" title="<?= htmlspecialchars((string) ($passwordTitle ?? '')) ?>" required></div>
             <div class="col-md-2"><label class="form-label" for="new_user_role_id">Role</label>
                 <select id="new_user_role_id" class="form-select" name="role_id" required>
                     <?php foreach ($roles as $role): ?>
@@ -34,7 +29,7 @@ $passwordTitle = 'Minimum 8 characters with uppercase, lowercase, number, and sp
             <td><?= htmlspecialchars($userItem['email']) ?></td>
             <td><?= htmlspecialchars($userItem['role_name']) ?></td>
             <td>
-                <span class="badge <?= (int) $userItem['is_active'] === 1 ? 'badge-success' : 'badge-danger' ?>">
+                <span class="badge <?= (int) $userItem['is_active'] === 1 ? 'bg-success' : 'bg-danger' ?>">
                     <?= (int) $userItem['is_active'] === 1 ? 'Active' : 'Removed' ?>
                 </span>
             </td>
@@ -54,7 +49,7 @@ $passwordTitle = 'Minimum 8 characters with uppercase, lowercase, number, and sp
             <td>
                 <form class="d-flex gap-2" method="post" action="/index.php?action=users.reset_password">
                     <input type="hidden" name="user_id" value="<?= (int) $userItem['id'] ?>">
-                    <input aria-label="Set new password for user" class="form-control" type="password" name="new_password" autocomplete="new-password" minlength="8" pattern="<?= htmlspecialchars($passwordPattern) ?>" title="<?= htmlspecialchars($passwordTitle) ?>" required>
+                    <input aria-label="Set new password for user" class="form-control" type="password" name="new_password" autocomplete="new-password" minlength="<?= (int) ($passwordMinLength ?? 8) ?>" pattern="<?= htmlspecialchars((string) ($passwordPattern ?? '')) ?>" title="<?= htmlspecialchars((string) ($passwordTitle ?? '')) ?>" required>
                     <button class="btn btn-outline-primary btn-sm" type="submit">Reset</button>
                 </form>
             </td>
