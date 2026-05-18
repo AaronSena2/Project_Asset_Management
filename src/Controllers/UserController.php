@@ -34,6 +34,12 @@ final class UserController
     {
         $this->auth->requireRole([User::ROLE_SYSTEM_ADMINISTRATOR]);
 
+        $password = (string) ($post['password'] ?? '');
+        if (!$this->isStrongPassword($password)) {
+            header('Location: /index.php?action=users');
+            exit;
+        }
+
         $creator = $this->auth->user();
         $id = $this->users->create($post, (int) $creator['id']);
 
@@ -112,7 +118,7 @@ final class UserController
 
         $userId = (int) ($post['user_id'] ?? 0);
         $newPassword = (string) ($post['new_password'] ?? '');
-        if ($userId <= 0 || strlen(trim($newPassword)) < 8) {
+        if ($userId <= 0 || !$this->isStrongPassword($newPassword)) {
             header('Location: /index.php?action=users');
             exit;
         }
@@ -163,5 +169,14 @@ final class UserController
             'email' => $updated['email'],
             'role_name' => $updated['role_name'],
         ];
+    }
+
+    private function isStrongPassword(string $password): bool
+    {
+        return strlen($password) >= 8
+            && preg_match('/[A-Z]/', $password) === 1
+            && preg_match('/[a-z]/', $password) === 1
+            && preg_match('/\d/', $password) === 1
+            && preg_match('/[^A-Za-z0-9]/', $password) === 1;
     }
 }
