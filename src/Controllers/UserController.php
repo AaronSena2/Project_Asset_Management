@@ -54,9 +54,7 @@ final class UserController
 
         $userId = (int) ($post['user_id'] ?? 0);
         $roleId = (int) ($post['role_id'] ?? 0);
-        $fullName = trim((string) ($post['full_name'] ?? ''));
-        $email = trim((string) ($post['email'] ?? ''));
-        if ($userId <= 0 || $roleId <= 0 || $fullName === '' || $email === '' || filter_var($email, FILTER_VALIDATE_EMAIL) === false) {
+        if ($userId <= 0 || $roleId <= 0) {
             header('Location: /index.php?action=users');
             exit;
         }
@@ -84,7 +82,9 @@ final class UserController
 
         $userId = (int) ($post['user_id'] ?? 0);
         $roleId = (int) ($post['role_id'] ?? 0);
-        if ($userId <= 0 || $roleId <= 0) {
+        $fullName = trim((string) ($post['full_name'] ?? ''));
+        $email = trim((string) ($post['email'] ?? ''));
+        if ($userId <= 0 || $roleId <= 0 || $fullName === '' || $email === '' || filter_var($email, FILTER_VALIDATE_EMAIL) === false) {
             header('Location: /index.php?action=users');
             exit;
         }

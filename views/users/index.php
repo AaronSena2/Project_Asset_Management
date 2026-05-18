@@ -54,7 +54,7 @@
                 </form>
             </td>
             <td>
-                <form method="post" action="/index.php?action=users.remove" onsubmit="return confirm('Remove this user from active access?');">
+                <form class="js-user-remove-form" method="post" action="/index.php?action=users.remove">
                     <input type="hidden" name="user_id" value="<?= (int) $userItem['id'] ?>">
                     <button
                         class="btn btn-outline-primary btn-sm"
@@ -70,3 +70,13 @@
     </tbody>
 </table>
 </div>
+
+<script>
+document.querySelectorAll('.js-user-remove-form').forEach((form) => {
+    form.addEventListener('submit', (event) => {
+        if (!window.confirm('Remove this user from active access?')) {
+            event.preventDefault();
+        }
+    });
+});
+</script>
