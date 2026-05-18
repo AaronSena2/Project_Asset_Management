@@ -75,7 +75,7 @@ if (!empty($viewData) && is_array($viewData)) {
 <body class="<?= $user ? 'dashboard-layout' : 'bg-light' ?>">
 <?php if ($user): ?>
 <div class="app-shell">
-    <aside class="sidebar app-sidebar" aria-label="Primary navigation">
+    <aside id="app-sidebar" class="sidebar app-sidebar" aria-label="Primary navigation">
         <div class="sidebar__brand sidebar-brand">
             <span class="sidebar__brand-mark sidebar-brand__mark" aria-hidden="true">AM</span>
             <div>
@@ -108,9 +108,20 @@ if (!empty($viewData) && is_array($viewData)) {
             </div>
         </div>
     </aside>
+    <button type="button" class="sidebar-backdrop" id="sidebarBackdrop" aria-label="Close navigation"></button>
 
     <main class="main-content app-main">
         <header class="topbar navbar" aria-label="Page header">
+            <button
+                type="button"
+                class="btn btn-outline-primary sidebar-toggle"
+                id="sidebarToggle"
+                aria-controls="app-sidebar"
+                aria-expanded="false"
+                aria-label="Open navigation"
+            >
+                ☰ Menu
+            </button>
             <div class="topbar__heading">
                 <ul class="breadcrumb topbar__breadcrumb" aria-label="Breadcrumb">
                     <li class="breadcrumb-item"><a href="/index.php?action=dashboard">Home</a></li>
@@ -139,5 +150,42 @@ if (!empty($viewData) && is_array($viewData)) {
 </main>
 <?php endif; ?>
 <script src="/assets/js/specifications.js"></script>
+<?php if ($user): ?>
+<script>
+    (() => {
+        const body = document.body;
+        const toggle = document.getElementById('sidebarToggle');
+        const backdrop = document.getElementById('sidebarBackdrop');
+
+        if (!toggle || !backdrop) {
+            return;
+        }
+
+        const closeSidebar = () => {
+            body.classList.remove('is-sidebar-open');
+            toggle.setAttribute('aria-expanded', 'false');
+        };
+
+        toggle.addEventListener('click', () => {
+            const isOpen = body.classList.toggle('is-sidebar-open');
+            toggle.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
+        });
+
+        backdrop.addEventListener('click', closeSidebar);
+
+        document.addEventListener('keydown', (event) => {
+            if (event.key === 'Escape') {
+                closeSidebar();
+            }
+        });
+
+        window.addEventListener('resize', () => {
+            if (window.innerWidth > 991) {
+                closeSidebar();
+            }
+        });
+    })();
+</script>
+<?php endif; ?>
 </body>
 </html>
