@@ -929,7 +929,7 @@ button:focus-visible,
     .app-sidebar {
         position: fixed;
         inset: 0 auto 0 0;
-        width: min(80vw, 320px);
+        width: min(75vw, 320px);
         min-height: 100dvh;
         border-right: 0;
         transform: translateX(-100%);

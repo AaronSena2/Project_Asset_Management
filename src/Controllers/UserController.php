@@ -90,7 +90,10 @@ final class UserController
         $roleId = (int) ($post['role_id'] ?? 0);
         $fullName = trim((string) ($post['full_name'] ?? ''));
         $email = trim((string) ($post['email'] ?? ''));
-        if ($userId <= 0 || $roleId <= 0 || $fullName === '' || $email === '' || filter_var($email, FILTER_VALIDATE_EMAIL) === false) {
+        $isValidIdentity = $userId > 0 && $roleId > 0;
+        $hasRequiredFields = $fullName !== '' && $email !== '';
+        $hasValidEmail = filter_var($email, FILTER_VALIDATE_EMAIL) !== false;
+        if (!$isValidIdentity || !$hasRequiredFields || !$hasValidEmail) {
             header('Location: /index.php?action=users');
             exit;
         }
