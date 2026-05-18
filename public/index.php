@@ -129,6 +129,21 @@ if ($action === 'users.update_role' && $method === 'POST') {
     return;
 }
 
+if ($action === 'users.update' && $method === 'POST') {
+    $userController->update($_POST);
+    return;
+}
+
+if ($action === 'users.reset_password' && $method === 'POST') {
+    $userController->resetPassword($_POST);
+    return;
+}
+
+if ($action === 'users.remove' && $method === 'POST') {
+    $userController->remove($_POST);
+    return;
+}
+
 if ($action === 'categories' && $method === 'GET') {
     $categoryController->index();
     return;

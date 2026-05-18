@@ -20,7 +20,7 @@
 
 <div class="table-responsive">
 <table class="table table-striped table-bordered">
-    <thead><tr><th>ID</th><th>Name</th><th>Email</th><th>Role</th><th>Update Role</th></tr></thead>
+    <thead><tr><th>ID</th><th>Name</th><th>Email</th><th>Role</th><th>Status</th><th>Edit User</th><th>Reset Password</th><th>Remove User</th></tr></thead>
     <tbody>
     <?php foreach ($users as $userItem): ?>
         <tr>
@@ -29,14 +29,40 @@
             <td><?= htmlspecialchars($userItem['email']) ?></td>
             <td><?= htmlspecialchars($userItem['role_name']) ?></td>
             <td>
-                <form class="d-flex gap-2" method="post" action="/index.php?action=users.update_role">
+                <span class="badge <?= (int) $userItem['is_active'] === 1 ? 'badge-success' : 'badge-danger' ?>">
+                    <?= (int) $userItem['is_active'] === 1 ? 'Active' : 'Removed' ?>
+                </span>
+            </td>
+            <td>
+                <form class="d-flex gap-2" method="post" action="/index.php?action=users.update">
                     <input type="hidden" name="user_id" value="<?= (int) $userItem['id'] ?>">
-                    <select aria-label="Update role for user" class="form-select" name="role_id">
+                    <input aria-label="Update full name for user" class="form-control" name="full_name" value="<?= htmlspecialchars($userItem['full_name']) ?>" required>
+                    <input aria-label="Update email for user" class="form-control" type="email" name="email" value="<?= htmlspecialchars($userItem['email']) ?>" required>
+                    <select aria-label="Update role for user" class="form-select" name="role_id" required>
                         <?php foreach ($roles as $role): ?>
                             <option value="<?= (int) $role['id'] ?>" <?= (int) $userItem['role_id'] === (int) $role['id'] ? 'selected' : '' ?>><?= htmlspecialchars($role['name']) ?></option>
                         <?php endforeach; ?>
                     </select>
-                    <button class="btn btn-outline-primary btn-sm" type="submit">Update</button>
+                    <button class="btn btn-outline-primary btn-sm" type="submit">Save</button>
+                </form>
+            </td>
+            <td>
+                <form class="d-flex gap-2" method="post" action="/index.php?action=users.reset_password">
+                    <input type="hidden" name="user_id" value="<?= (int) $userItem['id'] ?>">
+                    <input aria-label="Set new password for user" class="form-control" type="password" name="new_password" minlength="8" required>
+                    <button class="btn btn-outline-primary btn-sm" type="submit">Reset</button>
+                </form>
+            </td>
+            <td>
+                <form method="post" action="/index.php?action=users.remove" onsubmit="return confirm('Remove this user from active access?');">
+                    <input type="hidden" name="user_id" value="<?= (int) $userItem['id'] ?>">
+                    <button
+                        class="btn btn-outline-primary btn-sm"
+                        type="submit"
+                        <?= (int) $userItem['id'] === (int) ($currentUserId ?? 0) || (int) $userItem['is_active'] !== 1 ? 'disabled' : '' ?>
+                    >
+                        Remove
+                    </button>
                 </form>
             </td>
         </tr>

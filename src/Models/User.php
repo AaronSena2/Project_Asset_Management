@@ -104,6 +104,100 @@ final class User
         ]);
     }
 
+    public function update(int $userId, array $payload): void
+    {
+        $stmt = $this->db->prepare(
+            sprintf(
+                'UPDATE users SET full_name = :full_name, email = :email, role_id = :role_id WHERE `%s` = :id',
+                $this->userIdColumn()
+            )
+        );
+        $stmt->execute([
+            'full_name' => trim((string) ($payload['full_name'] ?? '')),
+            'email' => trim((string) ($payload['email'] ?? '')),
+            'role_id' => (int) ($payload['role_id'] ?? 0),
+            'id' => $userId,
+        ]);
+    }
+
+    public function resetPassword(int $userId, string $newPassword): void
+    {
+        $stmt = $this->db->prepare(
+            sprintf('UPDATE users SET password_hash = :password_hash WHERE `%s` = :id', $this->userIdColumn())
+        );
+        $stmt->execute([
+            'password_hash' => password_hash($newPassword, PASSWORD_DEFAULT),
+            'id' => $userId,
+        ]);
+    }
+
+    public function deactivate(int $userId): void
+    {
+        $stmt = $this->db->prepare(
+            sprintf('UPDATE users SET is_active = 0 WHERE `%s` = :id', $this->userIdColumn())
+        );
+        $stmt->execute(['id' => $userId]);
+    }
+
+    public function findById(int $userId): ?array
+    {
+        $stmt = $this->db->prepare(
+            sprintf(
+                'SELECT u.`%1$s` AS id, u.full_name, u.email, u.role_id, r.name AS role_name, u.is_active
+                 FROM users u
+                 INNER JOIN roles r ON r.id = u.role_id
+                 WHERE u.`%1$s` = :id
+                 LIMIT 1',
+                $this->userIdColumn()
+            )
+        );
+        $stmt->execute(['id' => $userId]);
+        $user = $stmt->fetch();
+
+        return $user ?: null;
+    }
+
+    public function isSystemAdministratorUser(int $userId): bool
+    {
+        $stmt = $this->db->prepare(
+            sprintf(
+                'SELECT COUNT(*) FROM users u
+                 INNER JOIN roles r ON r.id = u.role_id
+                 WHERE u.`%s` = :id AND r.name = :role_name',
+                $this->userIdColumn()
+            )
+        );
+        $stmt->execute([
+            'id' => $userId,
+            'role_name' => self::ROLE_SYSTEM_ADMINISTRATOR,
+        ]);
+
+        return (int) $stmt->fetchColumn() > 0;
+    }
+
+    public function isSystemAdministratorRole(int $roleId): bool
+    {
+        $stmt = $this->db->prepare('SELECT COUNT(*) FROM roles WHERE id = :id AND name = :role_name');
+        $stmt->execute([
+            'id' => $roleId,
+            'role_name' => self::ROLE_SYSTEM_ADMINISTRATOR,
+        ]);
+
+        return (int) $stmt->fetchColumn() > 0;
+    }
+
+    public function activeSystemAdministratorsCount(): int
+    {
+        $stmt = $this->db->prepare(
+            'SELECT COUNT(*) FROM users u
+             INNER JOIN roles r ON r.id = u.role_id
+             WHERE r.name = :role_name AND u.is_active = 1'
+        );
+        $stmt->execute(['role_name' => self::ROLE_SYSTEM_ADMINISTRATOR]);
+
+        return (int) $stmt->fetchColumn();
+    }
+
     private function userIdColumn(): string
     {
         if ($this->userIdColumn !== null) {
